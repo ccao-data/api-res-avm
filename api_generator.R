@@ -14,17 +14,18 @@ valid_categorical <- function(value){
   variable_name <- deparse(substitute(value))
   possible_values <- model_vars %>% filter(var_name_standard == variable_name)
   if (!value %in% possible_values$var_code) {
-    return(list(status = FALSE, message =  paste0(variable_name, " invalid. Possible options: ", paste(possible_values$var_code, collapse = ", "))))
+    return(list(status = FALSE, message =  list(variable_name = variable_name, valid_options = paste(possible_values$var_code, collapse = ", "))))
   } else {
-    return(list(status = TRUE, message = "TRUE input"))
+    return(list(status = TRUE, message = "Valid input"))
   }
 }
 
 valid_numeric_char <- function(value){
+  variable_name <- deparse(substitute(value))
   if(!is.na(as.numeric(value))) {
-    return(TRUE)
+    return(list(status = TRUE, message = "Valid input"))
   } else {
-    return(FALSE)
+    return(list(status = FALSE, message = list(variable_name = variable_name, valid_options = "Numeric format")))
   }
 }
 
@@ -42,14 +43,14 @@ get_result <- function(pin, char_age, char_air, char_apts, char_attic_fnsh, char
                        time_sale_week, time_sale_week_of_year){
   
   # Validate numeric inputs
-  if (!valid_numeric_char(char_age)) return(FALSE)
-  if (!valid_numeric_char(char_beds)) return(FALSE)
-  if (!valid_numeric_char(char_bldg_sf)) return(FALSE)
-  if (!valid_numeric_char(char_fbath)) return(FALSE)
-  if (!valid_numeric_char(char_frpl)) return(FALSE)
-  if (!valid_numeric_char(char_hbath)) return(FALSE)
-  if (!valid_numeric_char(char_hd_sf)) return(FALSE)
-  if (!valid_numeric_char(char_rooms)) return(FALSE)
+  if (!valid_numeric_char(char_age)[[1]]) return(valid_numeric_char(char_age))
+  if (!valid_numeric_char(char_beds)[[1]]) return(valid_numeric_char(char_beds))
+  if (!valid_numeric_char(char_bldg_sf)[[1]]) return(valid_numeric_char(char_bldg_sf))
+  if (!valid_numeric_char(char_fbath)[[1]]) return(valid_numeric_char(char_fbath))
+  if (!valid_numeric_char(char_frpl)[[1]]) return(valid_numeric_char(char_frpl))
+  if (!valid_numeric_char(char_hbath)[[1]]) return(valid_numeric_char(char_hbath))
+  if (!valid_numeric_char(char_hd_sf)[[1]]) return(valid_numeric_char(char_hd_sf))
+  if (!valid_numeric_char(char_rooms)[[1]]) return(valid_numeric_char(char_rooms))
   
   # Validate categorical inputs
   if (!valid_categorical(char_air)[[1]]) return(valid_categorical(char_air))
