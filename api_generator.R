@@ -14,9 +14,9 @@ valid_categorical <- function(value){
   variable_name <- deparse(substitute(value))
   possible_values <- model_vars %>% filter(var_name_standard == variable_name)
   if (!value %in% possible_values$var_code) {
-    return(FALSE)
+    return(list(status = FALSE, message =  paste0(variable_name, " invalid. Possible options: ", paste(possible_values$var_code, collapse = ", "))))
   } else {
-    return(TRUE)
+    return(list(status = TRUE, message = "TRUE input"))
   }
 }
 
@@ -52,25 +52,25 @@ get_result <- function(pin, char_age, char_air, char_apts, char_attic_fnsh, char
   if (!valid_numeric_char(char_rooms)) return(FALSE)
   
   # Validate categorical inputs
-  if (!valid_categorical(char_air)) return(FALSE)
-  if (!valid_categorical(char_apts)) return(FALSE)
-  if (!valid_categorical(char_attic_fnsh)) return(FALSE)
-  if (!valid_categorical(char_attic_type)) return(FALSE)
-  if (!valid_categorical(char_bsmt)) return(FALSE)
-  if (!valid_categorical(char_bsmt_fin)) return(FALSE)
-  if (!valid_categorical(char_ext_wall)) return(FALSE)
-  if (!valid_categorical(char_gar1_area)) return(FALSE)
-  if (!valid_categorical(char_gar1_att)) return(FALSE)
-  if (!valid_categorical(char_gar1_cnst)) return(FALSE)
-  if (!valid_categorical(char_gar1_size)) return(FALSE)
-  if (!valid_categorical(char_heat)) return(FALSE)
-  if (!valid_categorical(char_oheat)) return(FALSE)
-  if (!valid_categorical(char_porch)) return(FALSE)
-  if (!valid_categorical(char_roof_cnst)) return(FALSE)
-  if (!valid_categorical(char_tp_dsgn)) return(FALSE)
-  if (!valid_categorical(char_tp_plan)) return(FALSE)
-  if (!valid_categorical(char_type_resd)) return(FALSE)
-  if (!valid_categorical(char_use)) return(FALSE)
+  if (!valid_categorical(char_air)[[1]]) return(valid_categorical(char_air))
+  if (!valid_categorical(char_apts)[[1]]) return(valid_categorical(char_apts))
+  if (!valid_categorical(char_attic_fnsh)[[1]]) return(valid_categorical(char_attic_fnsh))
+  if (!valid_categorical(char_attic_type)[[1]]) return(valid_categorical(char_attic_type))
+  if (!valid_categorical(char_bsmt)[[1]]) return(valid_categorical(char_bsmt))
+  if (!valid_categorical(char_bsmt_fin)[[1]]) return(valid_categorical(char_bsmt_fin))
+  if (!valid_categorical(char_ext_wall)[[1]]) return(valid_categorical(char_ext_wall))
+  if (!valid_categorical(char_gar1_area)[[1]]) return(valid_categorical(char_gar1_area))
+  if (!valid_categorical(char_gar1_att)[[1]]) return(valid_categorical(char_gar1_att))
+  if (!valid_categorical(char_gar1_cnst)[[1]]) return(valid_categorical(char_gar1_cnst))
+  if (!valid_categorical(char_gar1_size)[[1]]) return(valid_categorical(char_gar1_size))
+  if (!valid_categorical(char_heat)[[1]]) return(valid_categorical(char_heat))
+  if (!valid_categorical(char_oheat)[[1]]) return(valid_categorical(char_oheat))
+  if (!valid_categorical(char_porch)[[1]]) return(valid_categorical(char_porch))
+  if (!valid_categorical(char_roof_cnst)[[1]]) return(valid_categorical(char_roof_cnst))
+  if (!valid_categorical(char_tp_dsgn)[[1]]) return(valid_categorical(char_tp_dsgn))
+  if (!valid_categorical(char_tp_plan)[[1]]) return(valid_categorical(char_tp_plan))
+  if (!valid_categorical(char_type_resd)[[1]]) return(valid_categorical(char_type_resd))
+  if (!valid_categorical(char_use)[[1]]) return(valid_categorical(char_use))
   
   # Assign the inputs to boilerplate
   boilerplate_df$char_age <- as.numeric(char_age)
