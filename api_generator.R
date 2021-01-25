@@ -1,4 +1,3 @@
-# source('predictor.R')
 library(treesnip)
 library(zip)
 library(lightgbm)
@@ -8,7 +7,7 @@ library(recipes)
 library(tidymodels)
 library(arrow)
 
-# Load variable informations and models
+# Load variable information and models
 model_vars <- ccao::vars_dict %>% filter(var_is_predictor == TRUE)
 
 vars_names <- unique(model_vars$var_name_standard)
@@ -66,57 +65,12 @@ get_result <- function(pin, inputs){
     if (valid_numeric_char(var, inputs[var])[[1]] == FALSE) return(valid_numeric_char(var, inputs[var]))
   }
   
-  # Assign the inputs to boilerplate
-  boilerplate_df$char_age <- as.numeric(inputs$char_age)
-  boilerplate_df$char_air <- as.numeric(inputs$char_air) 
-  boilerplate_df$char_apts <- as.numeric(inputs$char_apts)
-  boilerplate_df$char_attic_fnsh <- as.numeric(inputs$char_attic_fnsh) 
-  boilerplate_df$char_attic_type <- as.numeric(inputs$char_attic_type)
-  boilerplate_df$char_beds <- as.numeric(inputs$char_beds) 
-  boilerplate_df$char_bldg_sf <- as.numeric(inputs$char_bldg_sf)
-  boilerplate_df$char_bsmt <- as.numeric(inputs$char_bsmt)
-  boilerplate_df$char_bsmt_fin <- as.numeric(inputs$char_bsmt_fin)
-  boilerplate_df$char_ext_wall <- as.numeric(inputs$char_ext_wall)
-  boilerplate_df$char_fbath <- as.numeric(inputs$char_fbath)
-  boilerplate_df$char_frpl <- as.numeric(inputs$char_frpl)
-  boilerplate_df$char_gar1_area <- as.numeric(inputs$char_gar1_area)
-  boilerplate_df$char_gar1_att <- as.numeric(inputs$char_gar1_att)
-  boilerplate_df$char_gar1_cnst <- as.numeric(inputs$char_gar1_cnst)
-  boilerplate_df$char_gar1_size <- as.numeric(inputs$char_gar1_size)
-  boilerplate_df$char_hbath <- as.numeric(inputs$char_hbath)
-  boilerplate_df$char_hd_sf <- as.numeric(inputs$char_hd_sf)
-  boilerplate_df$char_heat <- as.numeric(inputs$char_heat)
-  boilerplate_df$char_oheat <- as.numeric(inputs$char_oheat)
-  boilerplate_df$char_porch <- as.numeric(inputs$char_porch)
-  boilerplate_df$char_roof_cnst <- as.numeric(inputs$char_roof_cnst)
-  boilerplate_df$char_rooms <- as.numeric(inputs$char_rooms) 
-  boilerplate_df$char_tp_dsgn <- as.numeric(inputs$char_tp_dsgn)
-  boilerplate_df$char_tp_plan <- as.numeric(inputs$char_tp_plan) 
-  boilerplate_df$char_type_resd <- as.numeric(inputs$char_type_resd)
-  boilerplate_df$char_use <- as.numeric(inputs$char_use)
-  boilerplate_df$econ_midincome <- as.numeric(inputs$econ_midincome)
-  boilerplate_df$econ_tax_rate <- as.numeric(inputs$econ_tax_rate)
-  boilerplate_df$geo_floodplain <- as.numeric(inputs$geo_floodplain) 
-  boilerplate_df$geo_fs_flood_factor <- as.numeric(inputs$geo_fs_flood_factor)
-  boilerplate_df$geo_fs_flood_risk_direction <- as.numeric(inputs$geo_fs_flood_risk_direction)
-  boilerplate_df$geo_ohare_noise <- as.numeric(inputs$geo_ohare_noise)
-  boilerplate_df$geo_school_elem_district <- inputs$geo_school_elem_district
-  boilerplate_df$geo_school_hs_district <- inputs$geo_school_hs_district
-  boilerplate_df$geo_withinmr100 <- as.numeric(inputs$geo_withinmr100)
-  boilerplate_df$geo_withinmr101300 <- as.numeric(inputs$geo_withinmr101300)
-  boilerplate_df$ind_garage <- as.logical(inputs$ind_garage)
-  boilerplate_df$ind_large_home <- as.logical(inputs$ind_large_home)
-  boilerplate_df$meta_nbhd <- as.character(inputs$meta_nbhd) 
-  boilerplate_df$meta_sale_price <- as.numeric(inputs$meta_sale_price) 
-  boilerplate_df$meta_town_code <- as.character(inputs$meta_town_code) 
-  boilerplate_df$time_sale_day_of_year <- as.numeric(inputs$time_sale_day_of_year)
-  boilerplate_df$time_sale_during_holidays <- as.logical(inputs$time_sale_during_holidays) 
-  boilerplate_df$time_sale_during_school_year <- as.logical(inputs$time_sale_during_school_year)
-  boilerplate_df$time_sale_month_of_year <- as.numeric(inputs$time_sale_month_of_year)
-  boilerplate_df$time_sale_quarter_of_year <- inputs$time_sale_quarter_of_year 
-  boilerplate_df$time_sale_week <- as.numeric(inputs$time_sale_week) 
-  boilerplate_df$time_sale_week_of_year <- as.numeric(inputs$time_sale_week_of_year)
+  # Assign the numeric inputs to boilerplate
+  for (var in numerical_vars$var_name_standard) {
+    boilerplate_df[var] <- as.numeric(inputs[var])
+  }
   
+  # Calculare and return prediction value from the model
   model_predict(
     spec = lgbm_final_full_fit,
     recipe = lgbm_final_full_recipe,
