@@ -1,10 +1,10 @@
 library(plumber)
 
 pr("api_generator.R") %>%
-  pr_run(port=8000)
+  pr_run(port = 8000)
 
 
-# NOTE: Explanation about the variables and valid inputs can be found at ccao::vars_dict.
+# NOTE: Explanation about variables and valid inputs can be found at ccao::vars_dict.
 
 # TESTING
 
