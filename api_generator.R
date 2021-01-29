@@ -58,7 +58,8 @@ check_completeness <- function(inputs) {
   }
 }
 
-get_result <- function(pin, inputs) {
+get_result <- function(inputs) {
+  inputs <- as.list(inputs)
   # Check completeness
   if (check_completeness(inputs)[[1]] == FALSE) {
     return(check_completeness(inputs))
@@ -93,15 +94,21 @@ get_result <- function(pin, inputs) {
   # pv_model loaded earlier from file
   adjusted <- predict(object = pv_model, new_data = boilerplate_df, truth = boilerplate_df$meta_sale_price, estimate = lgbm)
 
-  return(list(prediction = lgbm, adjusted_prediction = adjusted))
+  return(list(pin = inputs$meta_pin, prediction = lgbm, adjusted_prediction = adjusted))
 }
 
 #* Return the prediction value
-#* @param pin PIN
-#* @param char_apts Apartments
-#* @post /predict
+#* @serializer json
 #* @get /predict
-function(pin, ...) {
+function(...) {
   inputs <- list(...)
-  get_result(pin, inputs)
+  get_result(inputs)
+}
+
+#* Return the prediction value
+#* @serializer json
+#* @post /predict
+function(req, res) {
+  body <- jsonlite::fromJSON(req$body)
+  apply(body, 1, get_result)
 }
