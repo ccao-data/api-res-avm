@@ -19,7 +19,7 @@ r <- GET(url)
 print(content(r))
 
 # POST REQUEST EXAMPLE
-samples <- readr::read_csv("sample.csv", col_types = cols(meta_class = col_character()))
+samples <- arrow::read_parquet("samples.parquet")
 body <- toJSON(samples, pretty = TRUE)
 r <- POST(
   "http://localhost:8000/predict",
@@ -27,3 +27,8 @@ r <- POST(
   body = body
 )
 print(content(r))
+
+temp <- tibble(
+  api_init = content(r)$initial_prediction,
+  api_final = content(r)$final_prediction
+)

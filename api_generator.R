@@ -10,7 +10,7 @@ library(arrow)
 
 # Load list of variables used as predictors + their dtypes
 reg_vars <- ccao::vars_dict %>%
-  filter(var_is_predictor)
+  filter(var_is_predictor, var_name_standard != "ind_large_lot")
 reg_classes <- ccao::class_dict %>%
   filter(as.logical(regression_class))
 
@@ -68,7 +68,12 @@ valid_categorical <- function(variable_name, value) {
     filter(variable_name == var_name_standard) %>%
     pull(var_code)
   
-  if (any(!value %in% possible_values)) {
+  if (all(value %in% possible_values | is.na(value))) {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  } else {
     list(
       status = FALSE,
       message = list(
@@ -79,18 +84,18 @@ valid_categorical <- function(variable_name, value) {
         )
       )
     )
-  } else {
-    list(
-      status = TRUE,
-      message = "Valid input"
-    )
   }
 }
 
 
 # Check if numeric var is actually a numeric
 valid_numeric <- function(variable_name, value) {
-  if (any(is.na(as.numeric(value)))) {
+  if (all(!is.na(as.numeric(value)) | is.na(value))) {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  } else {
     list(
       status = FALSE,
       message = list(
@@ -98,18 +103,18 @@ valid_numeric <- function(variable_name, value) {
         valid_options = "Variable must be a valid number!"
       )
     )
-  } else {
-    list(
-      status = TRUE,
-      message = "Valid input"
-    )
   }
 }
 
 
 # Check if variable is a valid boolean
 valid_logical <- function(variable_name, value) {
-  if (any(is.na(as.logical(value)) | !as.numeric(value) %in% c(0, 1))) {
+  if (all(!is.na(as.logical(value)) | as.numeric(value) %in% c(0, 1))) {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  } else {
     list(
       status = FALSE,
       message = list(
@@ -117,24 +122,22 @@ valid_logical <- function(variable_name, value) {
         valid_options = "Variable must be either TRUE or FALSE!"
       )
     )
-  } else {
-    list(
-      status = TRUE,
-      message = "Valid input"
-    )
   }
 }
 
 
 # Assign a modeling group based on class
 assign_modeling_group <- function(class) {
-  reg_classes %>%
-    filter(class_code == class) %>%
-    mutate(cls = recode(
-      reporting_class,
-      "Single-Family" = "SF",
-      "Multi-Family" = "MF"
-    )) %>%
+  tibble(class) %>%
+    left_join(
+      reg_classes %>%
+        mutate(cls = recode(
+          reporting_class,
+          "Single-Family" = "SF",
+          "Multi-Family" = "MF"
+        )),
+      by = c("class" = "class_code")
+    ) %>%
     pull(cls)
 }
 
