@@ -8,107 +8,218 @@ library(recipes)
 library(tidymodels)
 library(arrow)
 
-# Load variable information and models
-model_vars <- ccao::vars_dict %>% filter(var_is_predictor == TRUE)
+# Load list of variables used as predictors + their dtypes
+reg_vars <- ccao::vars_dict %>%
+  filter(var_is_predictor)
+reg_classes <- ccao::class_dict %>%
+  filter(as.logical(regression_class))
 
-vars_names <- unique(model_vars$var_name_standard)
+# Get a list of variables and their types used in the model
+vars <- list(id = c("meta_pin", "meta_multi_code", "meta_document_num"))
+for (type in c("categorical", "numeric", "logical", "character")) {
+  vars[[type]] <- reg_vars %>%
+    filter(var_data_type == type) %>%
+    pull(var_name_standard) %>% unique()
+}
 
-categorical_vars <- model_vars %>%
-  filter(var_data_type == "categorical") %>%
-  group_by(var_name_standard) %>%
-  summarise(n = n())
-
-numerical_vars <- model_vars %>%
-  filter(var_data_type == "numeric") %>%
-  group_by(var_name_standard) %>%
-  summarise(n = n())
-
-boilerplate_df <- readRDS("boilerplate.RDS")
-
+# Load the model objects necessary to run the API
 lgbm_final_full_recipe <- readRDS("lgbm_recipe.rds")
-
 lgbm_final_full_fit <- ccao::model_lgbm_load("lgbm_model.zip")
-
 pv_model <- readRDS("postval_model.rds")
 
-valid_categorical <- function(variable_name, value) {
-  possible_values <- model_vars %>% filter(var_name_standard == variable_name)
-  if (!value %in% possible_values$var_code) {
-    return(list(status = FALSE, message = list(variable_name = variable_name, valid_options = possible_values$var_code)))
-  } else {
-    return(list(status = TRUE, message = "Valid input"))
-  }
-}
 
-valid_numeric_char <- function(variable_name, value) {
-  if (!is.na(as.numeric(value))) {
-    return(list(status = TRUE, message = "Valid input"))
-  } else {
-    return(list(status = FALSE, message = list(variable_name = variable_name, valid_options = "Numeric format")))
-  }
-}
-
-check_completeness <- function(inputs) {
-  input_vars <- names(inputs)
-  miss_vars <- setdiff(vars_names, input_vars)
+# Check that all modeling vars are present
+check_completeness <- function(inputs, all_var_names) {
+  var_names <- names(inputs)
+  miss_vars <- setdiff(all_var_names, var_names)
   if (length(miss_vars) == 0) {
-    return(list(TRUE, "Complete"))
+    list(complete = TRUE, missing_vars = "None")
   } else {
-    return(list(FALSE, missing_vars = miss_vars))
+    list(complete = FALSE, missing_vars = miss_vars)
   }
 }
 
-get_result <- function(inputs) {
-  inputs <- as.list(inputs)
-  # Check completeness
-  if (check_completeness(inputs)[[1]] == FALSE) {
-    return(check_completeness(inputs))
+
+# Check class of a vector
+valid_class <- function(class) {
+  if (!all(class %in% reg_classes$class_code)) {
+    list(
+      status = FALSE,
+      message = list(
+        variable_name = "class",
+        valid_options = paste0(
+          "Class must be one of: ",
+          paste0(reg_classes$class_code, collapse = ", ")
+        )
+      )
+    )
+  } else {
+    list(
+      status = TRUE,
+      message = "Valid regression class"
+    )
   }
+}
+
+
+# Check if categorical var has a value listed in the dictionary
+valid_categorical <- function(variable_name, value) {
+  possible_values <- reg_vars %>%
+    filter(variable_name == var_name_standard) %>%
+    pull(var_code)
+  
+  if (any(!value %in% possible_values)) {
+    list(
+      status = FALSE,
+      message = list(
+        variable_name = variable_name,
+        valid_options = paste0(
+          "Variable must be one of the following values: ",
+          paste0(possible_values, collapse = ", ")
+        )
+      )
+    )
+  } else {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  }
+}
+
+
+# Check if numeric var is actually a numeric
+valid_numeric <- function(variable_name, value) {
+  if (any(is.na(as.numeric(value)))) {
+    list(
+      status = FALSE,
+      message = list(
+        variable_name = variable_name,
+        valid_options = "Variable must be a valid number!"
+      )
+    )
+  } else {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  }
+}
+
+
+# Check if variable is a valid boolean
+valid_logical <- function(variable_name, value) {
+  if (any(is.na(as.logical(value)) | !as.numeric(value) %in% c(0, 1))) {
+    list(
+      status = FALSE,
+      message = list(
+        variable_name = variable_name,
+        valid_options = "Variable must be either TRUE or FALSE!"
+      )
+    )
+  } else {
+    list(
+      status = TRUE,
+      message = "Valid input"
+    )
+  }
+}
+
+
+# Assign a modeling group based on class
+assign_modeling_group <- function(class) {
+  reg_classes %>%
+    filter(class_code == class) %>%
+    mutate(cls = recode(
+      reporting_class,
+      "Single-Family" = "SF",
+      "Multi-Family" = "MF"
+    )) %>%
+    pull(cls)
+}
+
+
+# Combine the above functions to check inputs and query the model
+get_result <- function(inputs) {
+  
+  inputs <- as_tibble(inputs)
+  # Fill in vars which are "required" for modeling, but aren't actually used
+  for (var in vars$id) inputs[[var]] <- "0"
+  
+  # Check that all necessary variables are present
+  all_var_names <- c(unname(unlist(vars)), "meta_class")
+  if (!check_completeness(inputs, all_var_names)$complete) {
+    return(check_completeness(inputs, all_var_names))
+  }
+
+  # Validate class column
+  if (!valid_class(inputs$meta_class)$status) {
+    return(valid_class(inputs$meta_class))
+  }
+ 
+  # Convert inputs to dataframe and coerce to expected col types
+  inputs <- inputs %>%
+    mutate(
+      across(all_of(c(vars$character, vars$categorical)), as.character),
+      across(all_of(vars$numeric), as.numeric),
+      across(
+        all_of(vars$logical),
+        ~ ifelse(.x %in% c("0", "1"), as.numeric(.x), as.logical(.x))
+      ),
+      meta_modeling_group = assign_modeling_group(meta_class)
+    )
+
 
   # Validate categorical inputs
-  for (var in categorical_vars$var_name_standard) {
-    if (!valid_categorical(var, inputs[var])[[1]]) {
-      return(valid_categorical(var, inputs[var]))
+  for (var in vars$categorical) {
+    if (!valid_categorical(var, inputs[[var]])$status) {
+      return(valid_categorical(var, inputs[[var]]))
     }
   }
 
-  # Validate numerical inputs
-  for (var in numerical_vars$var_name_standard) {
-    if (valid_numeric_char(var, inputs[var])[[1]] == FALSE) {
-      return(valid_numeric_char(var, inputs[var]))
+  # # Validate numeric inputs
+  for (var in vars$numeric) {
+    if (!valid_numeric(var, inputs[[var]])$status) {
+      return(valid_numeric(var, inputs[[var]]))
+    }
+  }
+  
+  # # Validate logical inputs
+  for (var in vars$logical) {
+    if (!valid_logical(var, inputs[[var]])$status) {
+      return(valid_logical(var, inputs[[var]]))
     }
   }
 
-  # Assign the numeric inputs to boilerplate
-  for (var in numerical_vars$var_name_standard) {
-    boilerplate_df[var] <- as.numeric(inputs[var])
-  }
+  # Calculate and return prediction value from the model
+  inputs <- inputs %>%
+    mutate(
+      lgbm = model_predict(
+        spec = lgbm_final_full_fit,
+        recipe = lgbm_final_full_recipe,
+        data = .
+      ),
+      adjusted = predict(
+        object = pv_model,
+        new_data = .,
+        truth = meta_sale_price,
+        estimate = lgbm
+      )
+    )
 
-  # Calculare and return prediction value from the model
-  lgbm <- model_predict(
-    spec = lgbm_final_full_fit,
-    recipe = lgbm_final_full_recipe,
-    data = boilerplate_df
+  output <- list(
+    initial_prediction = inputs$lgbm,
+    final_prediction = inputs$adjusted
   )
-
-  # pv_model loaded earlier from file
-  adjusted <- predict(object = pv_model, new_data = boilerplate_df, truth = boilerplate_df$meta_sale_price, estimate = lgbm)
-
-  return(list(pin = inputs$meta_pin, prediction = lgbm, adjusted_prediction = adjusted))
+  
+  return(output)
 }
 
 #* Return the prediction value
 #* @serializer json
 #* @get /predict
-function(...) {
+#* @post /predict
+function(req, res, ...) {
   inputs <- list(...)
   get_result(inputs)
-}
-
-#* Return the prediction value
-#* @serializer json
-#* @post /predict
-function(req, res) {
-  body <- jsonlite::fromJSON(req$body)
-  apply(body, 1, get_result)
 }
