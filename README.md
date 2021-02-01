@@ -5,10 +5,8 @@ The repository contains the code for creating the API that will take inputs from
 # How it works
 
 - `api_caller.R` contains the script to run local server. This is the entry point for the API, and will call the `api_generator.R`.
-- `api_generator.R` contains the script that process the inputs by making validation and return either the prediction value or the error message if the inputs are invalid. This script will call `api_generator.R` after validate the inputs.
-
-  - `predictor.R` contains the script to use the trained model and return the prediction value.
-  - `lgbm_model.zip`, `lgbm_recipe.rds`, `boilerplate.RDS` are the files that used to prepare the inputs and create the predictions.
+- `api_generator.R` contains the script that process the inputs by making validation and return either the prediction value or the error message if the inputs are invalid.
+- `lgbm_model.zip`, `lgbm_recipe.rds`, `boilerplate.RDS` , `postval_model.rds` are the files that used to prepare the inputs and create the predictions.
 
 # Valid inputs
 This API accept the inputs in this [model explanation](https://gitlab.com/ccao-data-science---modeling/models/ccao_res_avm#features-used). The parameter naming and other details for each variables can be found in [CCAO package](https://gitlab.com/ccao-data-science---modeling/packages/ccao), you can run `ccao::vars_dict %>% filter(var_is_predictor == TRUE)`. 
@@ -31,9 +29,15 @@ The error message contains key-value pairs of invalid `variable_name` and `valid
     r <- GET(url)
     print(content(r))
     
-# POST Request Example
-    library(httr)
-    library(jsonlite)
-    body <- toJSON(boilerplate_df, pretty = TRUE)
-    r <- POST("http://localhost:8000/predict", body = body)
-    print(content(r))
+    
+# POST Request Example in Python
+    # pip install requests-html
+    from requests_html import HTMLSession
+    import pandas as pd
+    
+    df = pd.read_csv(r"sample.csv")
+    json_object = df.to_json(orient="records")
+    session = HTMLSession()
+    r = session.post("http://localhost:8000/predict", json=json_object)
+    r.html.text
+    
