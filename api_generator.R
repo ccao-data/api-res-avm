@@ -90,18 +90,26 @@ valid_categorical <- function(variable_name, value) {
 
 # Check if numeric var is actually a numeric
 valid_numeric <- function(variable_name, value) {
-  if (all(!is.na(as.numeric(value)) | is.na(value))) {
+  value <- as.numeric(value)
+  if (all(!is.na(value))) {
+    if (value >= 0) {
+      list(
+        status = TRUE,
+        message = "Valid input"
+      )
+    } else {
+      list(
+        status = FALSE,
+        message = list(
+          variable_name = variable_name,
+          valid_options = "Variable must be a valid non-negative number!"
+        )
+      )
+    }
+  } else {
     list(
       status = TRUE,
       message = "Valid input"
-    )
-  } else {
-    list(
-      status = FALSE,
-      message = list(
-        variable_name = variable_name,
-        valid_options = "Variable must be a valid number!"
-      )
     )
   }
 }
