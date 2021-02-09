@@ -47,28 +47,29 @@ This API accept the inputs in this [model explanation](https://gitlab.com/ccao-d
 |char_use ( Use )|1, 2|1 : Single-Family, 2 : Multi-Family||
 |econ_midincome ( Tract Median Income )|Numeric|Numeric : Numeric|Median income of the census tract containing the property centroid.|
 |econ_tax_rate ( Tax Rate )|Numeric|Numeric : Numeric|Tax rate paid by the property owner. Taken from Cook County Treasurer's Office.|
-|geo_floodplain ( FEMA Floodplain )|Numeric|Numeric : Numeric|Indicator for whether property lies within a FEMA-defined floodplain.|
+|geo_floodplain ( FEMA Floodplain )|Logical|Logical : TRUE/FALSE|Indicator for whether property lies within a FEMA-defined floodplain.|
 |geo_fs_flood_factor ( Flood Risk Factor )|Numeric|Numeric : Numeric|The property's First Street Flood Factor, a numeric integer from 1-10 (where 1 = minimal and 10 = extreme) based on flooding risk to the building footprint. Flood risk is defined as a combination of cumulative risk over 30 years and flood depth. Flood depth is calculated at the lowest elevation of the building footprint (largest if more than 1 exists, or property centroid where footprint does not exist. Data provided by First Street and academics at UPenn.|
 |geo_fs_flood_risk_direction ( Flood Risk Direction )|Numeric|Numeric : Numeric|The property's flood risk direction represented in a numeric value based on the change in risk for the location from 2020 to 2050 for the climate model realization of the RCP 4.5 mid emissions scenario. -1 = descreasing, 0 = stationary, 1 = increasing. Data provided by First Street and academics at UPenn.|
-|geo_ohare_noise ( O'Hare Noise Indicator )|Numeric|Numeric : Numeric||
+|geo_ohare_noise ( O'Hare Noise Indicator )|Logical|Logical : TRUE/FALSE||
 |geo_school_elem_district ( Elementary/Middle School District )|Numeric|Numeric : Numeric|Elementary and middle school district boundaries for Cook County and CPS.|
 |geo_school_hs_district ( High School District )|Numeric|Numeric : Numeric|High school district boundaries for Cook County and CPS.|
-|geo_withinmr100 ( Road Proximity < 100 Feet )|Numeric|Numeric : Numeric|Indicates whether the property is within 100 feet of a major road.|
-|geo_withinmr101300 ( Road Proximity 101 - 300 Feet )|Numeric|Numeric : Numeric|Indicates whether the property is between 101 and 300 feet of a major road.|
-|ind_garage ( Garage Indicator )|Numeric|Numeric : Numeric|Indicates presence of a garage of any size.|
+|geo_withinmr100 ( Road Proximity < 100 Feet )|Logical|Logical : TRUE/FALSE|Indicates whether the property is within 100 feet of a major road.|
+|geo_withinmr101300 ( Road Proximity 101 - 300 Feet )|Logical|Logical : TRUE/FALSE|Indicates whether the property is between 101 and 300 feet of a major road.|
+|ind_garage ( Garage Indicator )|Logical|Logical : TRUE/FALSE|Indicates presence of a garage of any size.|
 |ind_large_lot ( Large Lot Indicator )|Numeric|Numeric : Numeric|Large lot factor variable, where 1 acre of land (land square feet > 43559) is defined as a large lot. 1 = large lot, 0 = not a large lot.|
 |meta_nbhd ( Neighborhood Code )|Numeric|Numeric : Numeric|Assessor neighborhood. First 2 digits are township code, last 3 digits are neighborhood code.|
 |meta_sale_price ( Sale Price )|Numeric|Numeric : Numeric|Market price of sale.|
 |meta_town_code ( Township Code )|Numeric|Numeric : Numeric||
 |time_sale_day_of_year ( Sale Day of Year )|Numeric|Numeric : Numeric|Numeric encoding of day of year (1 - 365).|
-|time_sale_during_holidays ( Sale During Holidays )|Numeric|Numeric : Numeric|Indicator for whether sale occurred during holiday season (November - January).|
-|time_sale_during_school_year ( Sale During School Year )|Numeric|Numeric : Numeric|Indicator for whether sale occurred during usual school year (September - May).|
+|time_sale_during_holidays ( Sale During Holidays )|Logical|Logical : TRUE/FALSE|Indicator for whether sale occurred during holiday season (November - January).|
+|time_sale_during_school_year ( Sale During School Year )|Logical|Logical : TRUE/FALSE|Indicator for whether sale occurred during usual school year (September - May).|
 |time_sale_month_of_year ( Sale Month of Year )|Numeric|Numeric : Numeric|Character encoding of month of year (Jan - Dec).|
 |time_sale_quarter ( Sale Quarter )|Numeric|Numeric : Numeric|Sale quarter calculated as the number of quarters since January 1997.|
 |time_sale_quarter_of_year ( Sale Quarter of Year )|Numeric|Numeric : Numeric|Character encoding of quarter of year (Q1 - Q4).|
 |time_sale_week ( Sale Week )|Numeric|Numeric : Numeric|Sale week calculated as the number of weeks since January 1st, 1997.|
 |time_sale_week_of_year ( Sale Week of Year )|Numeric|Numeric : Numeric|Numeric encoding of week of year (1 - 52).|
 |time_sale_year ( Sale Year )|Numeric|Numeric : Numeric|Sale year calculated as the number of years since 0 B.C.E.|
+|meta_class|202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 234, 278, 295|202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 234, 278, 295||
 
 
 # API Behavior
