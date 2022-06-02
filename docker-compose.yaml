@@ -1,0 +1,29 @@
+version: '3.6'
+services:
+  api_res_avm:
+    build: .
+    image: ${CCAO_REGISTRY_URL}/services/api_res_avm:latest
+    ports:
+      - "3636:3636"
+    networks:
+      - apinet
+    environment:
+      - AWS_S3_DVC_BUCKET
+      - AWS_S3_MODEL_BUCKET
+      - AWS_S3_MODEL_RUN_ID
+      - AWS_S3_MODEL_YEAR
+      - API_PORT
+    secrets:
+      - ENV_FILE
+    restart: unless-stopped
+
+networks:
+  apinet:
+    ipam:
+      config:
+        - subnet: 211.25.0.0/16
+    name: apinet
+
+secrets:
+  ENV_FILE:
+    file: secrets/ENV_FILE
