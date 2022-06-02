@@ -9,7 +9,11 @@ library(vetiver)
 source("generics.R")
 
 # Read AWS creds from Docker secrets
-readRenviron("secrets/ENV_FILE")
+if (file.exists("/run/secrets/ENV_FILE")) {
+  readRenviron("/run/secrets/ENV_FILE")
+} else {
+  readRenviron("secrets/ENV_FILE")
+}
 readRenviron(".env")
 
 # Get the model run attributes at runtime from env vars
