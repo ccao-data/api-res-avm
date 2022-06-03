@@ -95,4 +95,7 @@ model$pv$round_to_nearest <- metadata$pv_round_to_nearest[[1]]
 # Start API
 pr() %>%
   vetiver_api(model) %>%
-  pr_run(port = api_port)
+  pr_run(
+    host = "0.0.0.0",
+    port = api_port
+  )
