@@ -1,3 +1,5 @@
 secrets/
+renv/library
+renv/staging
 .Rhistory
 README.md
