@@ -78,15 +78,15 @@ predictors <- recipe$var_info %>%
   filter(role == "predictor") %>%
   pull(variable)
 ptype_tbl <- training_data %>%
-  filter(meta_pin == "13264290020000") %>%
+  filter(meta_pin == "15251030220000") %>%
   select(all_of(predictors))
-ptype <- vetiver_create_ptype(fit, save_ptype = ptype_tbl)
+ptype <- vetiver_create_ptype(model = fit, save_prototype = ptype_tbl)
 
 
 # Create API -------------------------------------------------------------------
 
 # Create model object and populate metadata
-model <- vetiver_model(fit, "LightGBM", save_ptype = ptype)
+model <- vetiver_model(fit, "LightGBM", save_prototype = ptype)
 model$recipe <- recipe
 model$pv$round_type <- metadata$pv_round_type
 model$pv$round_break <- metadata$pv_round_break[[1]]

@@ -1,7 +1,7 @@
 # MINI TEMPLATE DOCKERFILE FOR CCAO APIS 
 
 # Setup 
-FROM rocker/r-ver:4.2.0
+FROM rocker/r-ver:4.2.2
 WORKDIR /api/
 CMD ["Rscript", "api.R"]
 
