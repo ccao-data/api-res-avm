@@ -146,24 +146,19 @@
     },
     "assessr": {
       "Package": "assessr",
-      "Version": "0.4.5",
-      "Source": "GitLab",
-      "RemoteType": "gitlab",
-      "RemoteHost": "gitlab.com",
-      "RemoteUsername": "ccao-data-science---modeling",
-      "RemoteRepo": "packages/assessr",
-      "RemoteSubdir": "",
+      "Version": "0.5.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "ccao-data",
+      "RemoteRepo": "assessr",
       "RemoteRef": "master",
-      "RemoteSha": "f70941bb8d00c3c0fb24b3d187bfb94e20199fbb",
-      "Remotes": "gitlab::ccao-data-science---modeling/packages/ccao",
+      "RemoteSha": "dcfc0f0585462cc87cab42b965d16ec4c5546256",
       "Requirements": [
         "R",
-        "clustMixType",
-        "dbscan",
-        "stats",
-        "utils"
+        "stats"
       ],
-      "Hash": "d30f262a5d6b5ca676c0f4778403a483"
+      "Hash": "2bb19b867910fb7334778ec519fac8d2"
     },
     "aws.s3": {
       "Package": "aws.s3",
@@ -261,16 +256,15 @@
     },
     "ccao": {
       "Package": "ccao",
-      "Version": "1.2.0",
-      "Source": "GitLab",
-      "RemoteType": "gitlab",
-      "RemoteHost": "gitlab.com",
-      "RemoteUsername": "ccao-data-science---modeling",
-      "RemoteRepo": "packages/ccao",
-      "RemoteSubdir": "",
+      "Version": "1.2.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "ccao-data",
+      "RemoteRepo": "ccao",
       "RemoteRef": "master",
-      "RemoteSha": "b08641555dfc7a8500ba2f80d2b9d4bf6e4359a8",
-      "Remotes": "gitlab::ccao-data-science---modeling/packages/assessr",
+      "RemoteSha": "74737102c48ce07b769a10f42693d9c2c958e9ef",
+      "Remotes": "ccao-data/assessr",
       "Requirements": [
         "R",
         "assessr",
@@ -279,7 +273,7 @@
         "rlang",
         "tidyr"
       ],
-      "Hash": "0995082e2845ba555af2f2fbd907bca9"
+      "Hash": "2aaaeceb70766ef2dc175999eb4aa0ad"
     },
     "class": {
       "Package": "class",
@@ -328,17 +322,6 @@
         "vctrs"
       ],
       "Hash": "db6b0e88fa092982ecf56322b47be0fe"
-    },
-    "clustMixType": {
-      "Package": "clustMixType",
-      "Version": "0.3-9",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "RColorBrewer",
-        "tibble"
-      ],
-      "Hash": "244fa84e339bd7decd4805a52debfd9e"
     },
     "codetools": {
       "Package": "codetools",
@@ -403,18 +386,6 @@
         "methods"
       ],
       "Hash": "b4c06e554f33344e044ccd7fdca750a9"
-    },
-    "dbscan": {
-      "Package": "dbscan",
-      "Version": "1.1-11",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Rcpp",
-        "graphics",
-        "stats"
-      ],
-      "Hash": "1363f02b54d086ace5af19f590697f90"
     },
     "dials": {
       "Package": "dials",
@@ -812,15 +783,14 @@
     },
     "lightsnip": {
       "Package": "lightsnip",
-      "Version": "0.0.2",
-      "Source": "GitLab",
-      "RemoteType": "gitlab",
-      "RemoteHost": "gitlab.com",
-      "RemoteUsername": "ccao-data-science---modeling",
-      "RemoteRepo": "packages/lightsnip",
-      "RemoteSubdir": "",
+      "Version": "0.0.6",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "ccao-data",
+      "RemoteRepo": "lightsnip",
       "RemoteRef": "master",
-      "RemoteSha": "11a0e88debccae42d83163137f0e728500536126",
+      "RemoteSha": "f877e887a51f8d423d5ca80719e345e31c4c311c",
       "Requirements": [
         "butcher",
         "dials",
@@ -833,7 +803,7 @@
         "tibble",
         "zip"
       ],
-      "Hash": "c380aa65bc41aaa15b325a8b7055fa44"
+      "Hash": "0d4041d95f45d2d5eaa5aaa1114f2213"
     },
     "listenv": {
       "Package": "listenv",
