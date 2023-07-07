@@ -31,7 +31,7 @@ temp_file_fit <- tempfile(fileext = ".zip")
 aws.s3::save_object(
   object = file.path(
     run_bucket, "workflow/fit",
-    paste0("year=", run_year), 
+    paste0("year=", run_year),
     paste0(run_id, ".zip")
   ),
   file = temp_file_fit
@@ -41,7 +41,7 @@ temp_file_recipe <- tempfile(fileext = ".rds")
 aws.s3::save_object(
   object = file.path(
     run_bucket, "workflow/recipe",
-    paste0("year=", run_year), 
+    paste0("year=", run_year),
     paste0(run_id, ".rds")
   ),
   file = temp_file_recipe
@@ -51,7 +51,7 @@ aws.s3::save_object(
 metadata <- read_parquet(
   file.path(
     run_bucket, "metadata",
-    paste0("year=", run_year), 
+    paste0("year=", run_year),
     paste0(run_id, ".parquet")
   )
 )
@@ -73,7 +73,7 @@ training_data <- read_parquet(
 fit <- lightsnip::lgbm_load(temp_file_fit)
 recipe <- readRDS(temp_file_recipe)
 
-# Extract a sample row of predictors to use for the API docs 
+# Extract a sample row of predictors to use for the API docs
 predictors <- recipe$var_info %>%
   filter(role == "predictor") %>%
   pull(variable)
