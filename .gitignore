@@ -1,7 +1,6 @@
 *.zip
 *.rds
-*.Rproj
-.Rproj.user/
 .env
 .Rhistory
+.Rproj.user/
 secrets/
