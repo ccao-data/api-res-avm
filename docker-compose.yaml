@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
 networks:
-  api_res_avm_net:
+  api-res-avm-net:
     ipam:
       config:
         - subnet: 211.25.0.0/16
