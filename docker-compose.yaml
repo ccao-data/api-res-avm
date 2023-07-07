@@ -2,11 +2,12 @@ version: '3.6'
 services:
   plumber:
     build: .
-    image: ${CCAO_REGISTRY_URL}/services/api_res_avm:latest
+    image: ${CCAO_REGISTRY_URL}/api-res-avm:latest
+    privileged: true
     ports:
       - "${API_PORT}:${API_PORT}"
     networks:
-      - api_res_avm_net
+      - api-res-avm-net
     environment:
       - AWS_S3_DVC_BUCKET
       - AWS_S3_MODEL_BUCKET
@@ -22,7 +23,7 @@ networks:
     ipam:
       config:
         - subnet: 211.25.0.0/16
-    name: api_res_avm_net
+    name: api-res-avm-net
 
 secrets:
   ENV_FILE:
