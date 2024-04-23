@@ -44,7 +44,7 @@ assert_that(
 # Given a run ID, return a model object that can be used to power a
 # vetiver API endpoint
 get_model_from_run_id <- function(run_id) {
-  run_year = substr(run_id, 1, 4)
+  run_year <- substr(run_id, 1, 4)
 
   # Download Files -------------------------------------------------------------
 
