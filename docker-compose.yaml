@@ -12,7 +12,6 @@ services:
       - AWS_S3_DVC_BUCKET
       - AWS_S3_MODEL_BUCKET
       - AWS_S3_MODEL_RUN_ID
-      - AWS_S3_MODEL_YEAR
       - API_PORT
     secrets:
       - ENV_FILE
