@@ -5,47 +5,74 @@ library(aws.s3)
 library(ccao)
 library(dplyr)
 library(lightsnip)
+library(tibble)
 library(plumber)
+library(purrr)
+library(rapidoc)
 library(vetiver)
 source("generics.R")
+
+# Define constants
+dvc_bucket_pre_2024 <- "s3://ccao-data-dvc-us-east-1"
+dvc_bucket_post_2024 <- "s3://ccao-data-dvc-us-east-1/files/md5"
+base_url_prefix <- "/predict"
 
 # Read AWS creds from Docker secrets
 if (file.exists("/run/secrets/ENV_FILE")) {
   readRenviron("/run/secrets/ENV_FILE")
 } else if (file.exists("secrets/ENV_FILE")) {
   readRenviron("secrets/ENV_FILE")
-} else {
-  readRenviron(".env")
 }
+readRenviron(".env")
 
 # Get the model run attributes at runtime from env vars
-dvc_bucket <- Sys.getenv("AWS_S3_DVC_BUCKET")
 run_bucket <- Sys.getenv("AWS_S3_MODEL_BUCKET")
 api_port <- as.numeric(Sys.getenv("API_PORT", unset = "3636"))
-default_run_id_var_name <- "AWS_S3_MODEL_RUN_ID"
+default_run_id_var_name <- "AWS_S3_DEFAULT_MODEL_RUN_ID"
 default_run_id <- Sys.getenv(default_run_id_var_name)
 
-# The list of run IDs that will be deployed as possible model endpoints
-valid_run_ids <- c(
-  "2024-02-06-relaxed-tristan",
-  "2024-03-17-stupefied-maya"
-)
+# The list of runs that will be deployed as possible model endpoints
+valid_runs <- rbind(
+  c(
+    run_id="2022-04-27-keen-gabe",
+    year="2022",
+    dvc_bucket=dvc_bucket_pre_2024,
+    predictors_only=FALSE
+  ),
+  c(
+    run_id="2023-03-14-clever-damani",
+    year="2023",
+    dvc_bucket=dvc_bucket_pre_2024,
+    predictors_only=FALSE
+  ),
+  c(
+    run_id="2024-02-06-relaxed-tristan",
+    year="2024",
+    dvc_bucket=dvc_bucket_post_2024,
+    predictors_only=TRUE
+  ),
+  c(
+    run_id="2024-03-17-stupefied-maya",
+    year="2024",
+    dvc_bucket=dvc_bucket_post_2024,
+    predictors_only=TRUE
+  )
+) %>%
+  as_tibble()
 
 assert_that(
-  default_run_id %in% valid_run_ids,
+  default_run_id %in% valid_runs$run_id,
   msg = sprintf(
     "%s must be a valid run_id - got '%s', expected one of: %s",
     default_run_id_var_name,
     default_run_id,
-    paste(valid_run_ids, collapse = ", ")
+    paste(valid_runs$run_id, collapse = ", ")
   )
 )
 
-# Given a run ID, return a model object that can be used to power a
+# Given a run ID and year, return a model object that can be used to power a
 # vetiver API endpoint
-get_model_from_run_id <- function(run_id) {
-  run_year <- substr(run_id, 1, 4)
-
+get_model_from_run <- function(run_id, year, dvc_bucket, predictors_only) {
   # Download Files -------------------------------------------------------------
 
   # Grab model fit and recipe objects
@@ -53,7 +80,7 @@ get_model_from_run_id <- function(run_id) {
   aws.s3::save_object(
     object = file.path(
       run_bucket, "workflow/fit",
-      paste0("year=", run_year),
+      paste0("year=", year),
       paste0(run_id, ".zip")
     ),
     file = temp_file_fit
@@ -63,7 +90,7 @@ get_model_from_run_id <- function(run_id) {
   aws.s3::save_object(
     object = file.path(
       run_bucket, "workflow/recipe",
-      paste0("year=", run_year),
+      paste0("year=", year),
       paste0(run_id, ".rds")
     ),
     file = temp_file_recipe
@@ -73,7 +100,7 @@ get_model_from_run_id <- function(run_id) {
   metadata <- read_parquet(
     file.path(
       run_bucket, "metadata",
-      paste0("year=", run_year),
+      paste0("year=", year),
       paste0(run_id, ".parquet")
     )
   )
@@ -95,13 +122,21 @@ get_model_from_run_id <- function(run_id) {
   fit <- lightsnip::lgbm_load(temp_file_fit)
   recipe <- readRDS(temp_file_recipe)
 
-  # Extract a sample row of predictors to use for the API docs
-  predictors <- recipe$var_info %>%
-    filter(role == "predictor") %>%
-    pull(variable)
+  # Extract a sample row of data to use for the API docs
   ptype_tbl <- training_data %>%
-    filter(meta_pin == "15251030220000") %>%
-    select(all_of(predictors))
+    filter(meta_pin == "15251030220000")
+
+  # If the model recipe is configured to allow it, strip all chars except
+  # for the predictors from the example row
+  if (predictors_only) {
+    predictors <- recipe$var_info %>%
+      filter(role == "predictor") %>%
+      pull(variable)
+    ptype_tbl <- ptype_tbl %>%
+      filter(meta_pin == "15251030220000") %>%
+      select(all_of(predictors))
+  }
+
   ptype <- vetiver_create_ptype(model = fit, save_prototype = ptype_tbl)
 
 
@@ -117,21 +152,72 @@ get_model_from_run_id <- function(run_id) {
   return(model)
 }
 
-default_model <- get_model_from_run_id(default_run_id)
+default_run <- valid_runs %>%
+  dplyr::filter(run_id == default_run_id) %>%
+  dplyr::slice_head()
 
-router <- pr() %>%
-  # Point the /predict endpoint to the default model
-  vetiver_api(default_model)
-
-# Create endpoints for each model based on run ID and add them to the router
-for (run_id in valid_run_ids) {
-  model <- get_model_from_run_id(run_id)
-  vetiver_api(
-    router,
-    model,
-    path = sprintf("/predict/%s", run_id)
+all_endpoints <- list()
+for (i in 1:nrow(valid_runs)) {
+  run <- valid_runs[i, ]
+  model <- get_model_from_run(
+    run$run_id, run$year, run$dvc_bucket, run$predictors_only
+  )
+  all_endpoints[[i]] <- list(
+    path = glue::glue("{base_url_prefix}/{run$run_id}"),
+    model = model,
+    is_default = run$run_id == default_run$run_id
   )
 }
+
+router <- pr() %>%
+  plumber::pr_set_debug(rlang::is_interactive()) %>%
+  plumber::pr_set_serializer(plumber::serializer_unboxed_json(null = "null"))
+
+for (i in 1:length(all_endpoints)) {
+  endpoint <- all_endpoints[[i]]
+  router <- plumber::pr_post(
+    router, endpoint$path, handler_predict(endpoint$model)
+  )
+  if (endpoint$is_default) {
+    router <- plumber::pr_post(
+      router, base_url_prefix, handler_predict(endpoint$model)
+    )
+  }
+}
+
+modify_spec <- function(spec) {
+  spec$info$title <- "CCAO Residential AVM API"
+  spec$info$description <- "API for returning predicted values using CCAO residential AVMs"
+
+  for (i in 1:length(all_endpoints)) {
+    endpoint <- all_endpoints[[i]]
+    ptype <- endpoint$model$prototype
+    path <- endpoint$path
+    orig_post <- pluck(spec, "paths", path, "post")
+    spec$paths[[path]]$post <- list(
+      summary = glue_spec_summary(ptype),
+      requestBody = map_request_body(ptype),
+      responses = orig_post$responses
+    )
+    if (endpoint$is_default) {
+      orig_default_post <- pluck(spec, "paths", base_url_prefix, "post")
+      spec$paths[[base_url_prefix]]$post <- list(
+        summary = glue_spec_summary(ptype),
+        requestBody = map_request_body(ptype),
+        responses = orig_default_post$responses
+      )
+    }
+  }
+
+  return(spec)
+}
+
+router <- plumber::pr_set_api_spec(router, api = modify_spec) %>%
+  plumber::pr_set_docs(
+    "rapidoc",
+    header_color = "#F2C6AC",
+    primary_color = "#8C2D2D"
+  )
 
 # Start API
 pr_run(
