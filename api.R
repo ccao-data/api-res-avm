@@ -34,28 +34,28 @@ default_run_id <- Sys.getenv(default_run_id_var_name)
 # The list of runs that will be deployed as possible model endpoints
 valid_runs <- rbind(
   c(
-    run_id="2022-04-27-keen-gabe",
-    year="2022",
-    dvc_bucket=dvc_bucket_pre_2024,
-    predictors_only=FALSE
+    run_id = "2022-04-27-keen-gabe",
+    year = "2022",
+    dvc_bucket = dvc_bucket_pre_2024,
+    predictors_only = FALSE
   ),
   c(
-    run_id="2023-03-14-clever-damani",
-    year="2023",
-    dvc_bucket=dvc_bucket_pre_2024,
-    predictors_only=FALSE
+    run_id = "2023-03-14-clever-damani",
+    year = "2023",
+    dvc_bucket = dvc_bucket_pre_2024,
+    predictors_only = FALSE
   ),
   c(
-    run_id="2024-02-06-relaxed-tristan",
-    year="2024",
-    dvc_bucket=dvc_bucket_post_2024,
-    predictors_only=TRUE
+    run_id = "2024-02-06-relaxed-tristan",
+    year = "2024",
+    dvc_bucket = dvc_bucket_post_2024,
+    predictors_only = TRUE
   ),
   c(
-    run_id="2024-03-17-stupefied-maya",
-    year="2024",
-    dvc_bucket=dvc_bucket_post_2024,
-    predictors_only=TRUE
+    run_id = "2024-03-17-stupefied-maya",
+    year = "2024",
+    dvc_bucket = dvc_bucket_post_2024,
+    predictors_only = TRUE
   )
 ) %>%
   as_tibble()
@@ -157,7 +157,7 @@ default_run <- valid_runs %>%
   dplyr::slice_head()
 
 all_endpoints <- list()
-for (i in 1:nrow(valid_runs)) {
+for (i in seq_len(nrow(valid_runs))) {
   run <- valid_runs[i, ]
   model <- get_model_from_run(
     run$run_id, run$year, run$dvc_bucket, run$predictors_only
@@ -173,7 +173,7 @@ router <- pr() %>%
   plumber::pr_set_debug(rlang::is_interactive()) %>%
   plumber::pr_set_serializer(plumber::serializer_unboxed_json(null = "null"))
 
-for (i in 1:length(all_endpoints)) {
+for (i in seq_along(all_endpoints)) {
   endpoint <- all_endpoints[[i]]
   router <- plumber::pr_post(
     router, endpoint$path, handler_predict(endpoint$model)
@@ -187,9 +187,11 @@ for (i in 1:length(all_endpoints)) {
 
 modify_spec <- function(spec) {
   spec$info$title <- "CCAO Residential AVM API"
-  spec$info$description <- "API for returning predicted values using CCAO residential AVMs"
+  spec$info$description <- (
+    "API for returning predicted values using CCAO residential AVMs"
+  )
 
-  for (i in 1:length(all_endpoints)) {
+  for (i in seq_along(all_endpoints)) {
     endpoint <- all_endpoints[[i]]
     ptype <- endpoint$model$prototype
     path <- endpoint$path
