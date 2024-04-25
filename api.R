@@ -71,7 +71,7 @@ assert_that(
 )
 
 # Given a run ID and year, return a model object that can be used to power a
-# vetiver API endpoint
+# Plumber/vetiver API endpoint
 get_model_from_run <- function(run_id, year, dvc_bucket, predictors_only) {
   # Download Files -------------------------------------------------------------
 
@@ -152,10 +152,12 @@ get_model_from_run <- function(run_id, year, dvc_bucket, predictors_only) {
   return(model)
 }
 
+# Filter the valid runs for the run marked as default
 default_run <- valid_runs %>%
   dplyr::filter(run_id == default_run_id) %>%
   dplyr::slice_head()
 
+# Retrieve paths and model objects for all endpoints to be deployed
 all_endpoints <- list()
 for (i in seq_len(nrow(valid_runs))) {
   run <- valid_runs[i, ]
@@ -169,15 +171,20 @@ for (i in seq_len(nrow(valid_runs))) {
   )
 }
 
+# Instantiate a Plumber router for the API. Note that we have to use direct
+# Plumber calls instead of using vetiver to define the API since vetiver
+# currently has bad support for deploying multiple models on the same API
 router <- pr() %>%
   plumber::pr_set_debug(rlang::is_interactive()) %>%
   plumber::pr_set_serializer(plumber::serializer_unboxed_json(null = "null"))
 
+# Add Plumber POST enpdoints for each model
 for (i in seq_along(all_endpoints)) {
   endpoint <- all_endpoints[[i]]
   router <- plumber::pr_post(
     router, endpoint$path, handler_predict(endpoint$model)
   )
+  # Point the base endpoint at the default model
   if (endpoint$is_default) {
     router <- plumber::pr_post(
       router, base_url_prefix, handler_predict(endpoint$model)
@@ -185,6 +192,8 @@ for (i in seq_along(all_endpoints)) {
   }
 }
 
+# Define a function to override the openapi spec for the API, using
+# each model's prototype for docs and examples
 modify_spec <- function(spec) {
   spec$info$title <- "CCAO Residential AVM API"
   spec$info$description <- (
