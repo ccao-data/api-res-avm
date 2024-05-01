@@ -1,4 +1,13 @@
 # Generics to support LightGBM model type
+vetiver_create_description._lgb.Booster <- function(model) {
+  run_id <- Sys.getenv("AWS_S3_MODEL_RUN_ID", unset = "Unknown")
+  paste("Run ID:", run_id)
+}
+
+vetiver_create_meta._lgb.Booster <- function(model, metadata) {
+  vetiver_meta(metadata, required_pkgs = c("lightgbm", "lightsnip"))
+}
+
 handler_predict._lgb.Booster <- function(vetiver_model, ...) {
   ptype <- vetiver_model$ptype
 

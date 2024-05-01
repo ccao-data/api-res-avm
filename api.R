@@ -164,11 +164,17 @@ for (i in seq_len(nrow(valid_runs))) {
   model <- get_model_from_run(
     run$run_id, run$year, run$dvc_bucket, run$predictors_only
   )
-  all_endpoints[[i]] <- list(
+  all_endpoints <- append(all_endpoints, list(list(
     path = glue::glue("{base_url_prefix}/{run$run_id}"),
-    model = model,
-    is_default = run$run_id == default_run$run_id
-  )
+    model = model
+  )))
+  # If this is the default endpoint, add an extra entry for it
+  if (run$run_id == default_run$run_id) {
+    all_endpoints <- append(all_endpoints, list(list(
+      path = glue::glue("{base_url_prefix}"),
+      model = model
+    )))
+  }
 }
 
 # Instantiate a Plumber router for the API. Note that we have to use direct
@@ -184,12 +190,6 @@ for (i in seq_along(all_endpoints)) {
   router <- plumber::pr_post(
     router, endpoint$path, handler_predict(endpoint$model)
   )
-  # Point the base endpoint at the default model
-  if (endpoint$is_default) {
-    router <- plumber::pr_post(
-      router, base_url_prefix, handler_predict(endpoint$model)
-    )
-  }
 }
 
 # Define a function to override the openapi spec for the API, using
@@ -210,14 +210,6 @@ modify_spec <- function(spec) {
       requestBody = map_request_body(ptype),
       responses = orig_post$responses
     )
-    if (endpoint$is_default) {
-      orig_default_post <- pluck(spec, "paths", base_url_prefix, "post")
-      spec$paths[[base_url_prefix]]$post <- list(
-        summary = glue_spec_summary(ptype),
-        requestBody = map_request_body(ptype),
-        responses = orig_default_post$responses
-      )
-    }
   }
 
   return(spec)
@@ -227,7 +219,9 @@ router <- plumber::pr_set_api_spec(router, api = modify_spec) %>%
   plumber::pr_set_docs(
     "rapidoc",
     header_color = "#F2C6AC",
-    primary_color = "#8C2D2D"
+    primary_color = "#8C2D2D",
+    use_path_in_nav_bar = TRUE,
+    show_method_in_nav_bar = "as-plain-text"
   )
 
 # Start API
