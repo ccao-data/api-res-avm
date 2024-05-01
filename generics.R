@@ -4,9 +4,11 @@ vetiver_create_description._lgb.Booster <- function(model) {
   paste("Run ID:", run_id)
 }
 
+
 vetiver_create_meta._lgb.Booster <- function(model, metadata) {
   vetiver_meta(metadata, required_pkgs = c("lightgbm", "lightsnip"))
 }
+
 
 handler_predict._lgb.Booster <- function(vetiver_model, ...) {
   ptype <- vetiver_model$ptype
