@@ -829,8 +829,8 @@
       "RemoteHost": "api.github.com",
       "RemoteUsername": "ccao-data",
       "RemoteRepo": "lightsnip",
-      "RemoteRef": "jeancochrane/avoid-loading-or-saving-record-evals-if-not-present",
-      "RemoteSha": "e29fc6b0096fefdc9908095d0ccc7ac271ba19c8",
+      "RemoteRef": "master",
+      "RemoteSha": "ef00b229877e4df5ab60d3049f2eb224794a9161",
       "Requirements": [
         "butcher",
         "dials",
@@ -843,7 +843,7 @@
         "tibble",
         "zip"
       ],
-      "Hash": "961554571128a081e551c4f05992de03"
+      "Hash": "3e4625daa0d644e49c9980888f0e6215"
     },
     "listenv": {
       "Package": "listenv",
