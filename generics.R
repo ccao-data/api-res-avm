@@ -10,11 +10,6 @@ vetiver_create_meta._lgb.Booster <- function(model, metadata) {
 }
 
 
-handler_startup._lgb.Booster <- function(vetiver_model) {
-  attach_pkgs(vetiver_model$metadata$required_pkgs)
-}
-
-
 handler_predict._lgb.Booster <- function(vetiver_model, ...) {
   ptype <- vetiver_model$ptype
 
