@@ -36,14 +36,31 @@ the new version of the `api.R` module.
 To update the default model that the API will use when no run ID is present in
 the `/predict` endpoint, update the `.env` file in the root of the deployment
 repo and change the value of the `AWS_S3_DEFAULT_MODEL_RUN_ID` env var to point
-to the run ID of the new default model. Then, restart the Docker Compose
-service by running `docker compose restart` to reload the environment variables
-from the `.env` file.
+to the run ID of the new default model. Bring the service down by running
+`docker compose down`, and then bring it back up by running
+`docker compose up -d`. Note that it's important that we perform `down` and
+then `up` in this case, because `docker compose restart` [does not reload
+environment variables defined in the Docker Compose
+config](https://docs.docker.com/reference/cli/docker/compose/restart/).
 
-Note that while `restart` [does not reload environment variables defined in the
-Docker Compose config](https://docs.docker.com/reference/cli/docker/compose/restart/),
-it works in our case because our Docker Compose config doesn't read our `.env`
-file from an [`env_file` Docker Compose
-attribute](https://docs.docker.com/reference/compose-file/services/#env_file)
-but rather [loads the file directly in
-`api.R`](https://github.com/ccao-data/api-res-avm/blob/3ae93e4aef32671587c1eb816277d3d6d20ede3a/api.R#L26).
+### Deploying code changes
+
+Follow these steps to deploy new code changes to the production environment:
+
+* Merge your PR to the main branch
+* Wait for the [`docker-build`
+  workflow](https://github.com/ccao-data/api-res-avm/actions/workflows/docker-build.yaml)
+  to complete execution on the main branch, so that it pushes the most recent
+  Docker image to the GitHub Docker registry
+* SSH into the server as the Shiny user and navigate to the prod directory
+* Confirm that the prod directory is on the main branch by running `git status`
+* Pull the latest code changes from the main branch by running `git pull origin master`
+* Pull the latest Docker image that the `docker-build` workflow built by running
+  `docker pull ghcr.io/ccao-data/api-res-avm`
+* Stop the running API service by running `docker compose down`
+* Restart the API service with the new image by running `docker compose up -d`
+* Watch the API logs with `docker compose logs -f` and wait until the service
+  prints a log line confirming that the API is running
+* Attempt to load [the API docs
+  page](https://datascience.cookcountyassessor.com/api/res_avm/__docs__/) to
+  confirm that the API service is running properly
