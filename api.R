@@ -23,7 +23,6 @@ if (file.exists("/run/secrets/ENV_FILE")) {
 } else if (file.exists("secrets/ENV_FILE")) {
   readRenviron("secrets/ENV_FILE")
 }
-readRenviron(".env")
 
 # Get the model run attributes at runtime from env vars
 run_bucket <- Sys.getenv("AWS_S3_MODEL_BUCKET")
