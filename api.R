@@ -67,6 +67,12 @@ valid_runs <- rbind(
     year = "2026",
     dvc_bucket = dvc_bucket_post_2024,
     predictors_only = TRUE
+  ),
+  c(
+    run_id = "2026-07-30-ecstatic-carly",
+    year = "2026",
+    dvc_bucket = dvc_bucket_post_2024,
+    predictors_only = TRUE
   )
 ) %>%
   as_tibble()
