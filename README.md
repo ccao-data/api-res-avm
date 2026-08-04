@@ -57,6 +57,7 @@ Follow these steps to deploy new code changes to the production environment:
 * Pull the latest code changes from the main branch by running `git pull origin master`
 * Pull the latest Docker image that the `docker-build` workflow built by running
   `docker pull ghcr.io/ccao-data/api-res-avm`
+* If your PR made any changes to `.env.example`, copy those changes to `.env`
 * Stop the running API service by running `docker compose down`
 * Restart the API service with the new image by running `docker compose up -d`
 * Watch the API logs with `docker compose logs -f` and wait until the service
@@ -64,3 +65,9 @@ Follow these steps to deploy new code changes to the production environment:
 * Attempt to load [the API docs
   page](https://datascience.cookcountyassessor.com/api/res_avm/__docs__/) to
   confirm that the API service is running properly
+    * If your PR changed the default model that the `/predict` endpoint uses,
+	    make sure that `/predict` returns the same `initial_prediction` as the
+	    endpoint specific to the model
+* If your PR changed the behavior of the default `/predict` endpoint, confirm
+  that you can modify characteristics in the API workbooks and receive an
+  expected value
