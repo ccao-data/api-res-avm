@@ -21,6 +21,9 @@ handler_predict._lgb.Booster <- function(vetiver_model, ...) {
       recipes::all_predictors()
     )
     pred <- predict(vetiver_model$model, new_data = prepped_data, ...)$.pred
+    if (isTRUE(vetiver_model$log_transform_enable)) {
+      pred <- exp(pred)
+    }
     rounded <- ccao::val_round_fmv(
       pred,
       breaks = vetiver_model$pv$round_break,
