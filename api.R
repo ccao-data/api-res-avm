@@ -178,7 +178,7 @@ get_model_from_run <- function(run_id, year, dvc_bucket, predictors_only) {
   # exp()-scaled back to dollars. Runs older than the flag lack the column
   model$log_transform_enable <-
     "log_transform_enable" %in% names(metadata) &&
-      isTRUE(metadata$log_transform_enable)
+    isTRUE(metadata$log_transform_enable)
 
   return(model)
 }
