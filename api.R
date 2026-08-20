@@ -73,7 +73,8 @@ valid_runs <- rbind(
     year = "2026",
     dvc_bucket = dvc_bucket_post_2024,
     predictors_only = TRUE
-  ) %>%
+  )
+) %>%
   as_tibble()
 
 assert_that(
