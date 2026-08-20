@@ -166,6 +166,12 @@ get_model_from_run <- function(run_id, year, dvc_bucket, predictors_only) {
   model$pv$round_break <- metadata$pv_round_break[[1]]
   model$pv$round_to_nearest <- metadata$pv_round_to_nearest[[1]]
 
+  # Runs trained on log(sale_price) predict in log space and need to be
+  # exp()-scaled back to dollars. Runs older than the flag lack the column;
+  # we added the flag in mid-2026 after finalizing that year's model
+  model$log_transform_enable <- "log_transform_enable" %in% names(metadata) &&
+    isTRUE(metadata$log_transform_enable)
+
   return(model)
 }
 
