@@ -14,25 +14,40 @@ handler_predict._lgb.Booster <- function(vetiver_model, ...) {
   ptype <- vetiver_model$ptype
 
   function(req) {
-    new_data <- req$body
-    prepped_data <- recipes::bake(
-      object = vetiver_model$recipe,
-      new_data = new_data,
-      recipes::all_predictors()
-    )
-    pred <- predict(vetiver_model$model, new_data = prepped_data, ...)$.pred
-    if (isTRUE(vetiver_model$log_transform_enable)) {
-      pred <- exp(pred)
-    }
-    rounded <- ccao::val_round_fmv(
-      pred,
-      breaks = vetiver_model$pv$round_break,
-      round_to = vetiver_model$pv$round_to_nearest,
-      type = vetiver_model$pv$round_type
-    )
-    list(
-      initial_prediction = pred,
-      rounded_prediction = rounded
+    # Attach a backtrace to any error raised while predicting so that the API
+    # error handler can log it (see error_handler() in logging.R). The
+    # backtrace starts at this function so that it excludes plumber internals.
+    # Errors raised by rlang::abort() (e.g. from recipes) already carry a
+    # backtrace, but it starts at plumber::pr_run(), so we replace it
+    handler_frame <- environment()
+    withCallingHandlers(
+      {
+        new_data <- req$body
+        prepped_data <- recipes::bake(
+          object = vetiver_model$recipe,
+          new_data = new_data,
+          recipes::all_predictors()
+        )
+        pred <- predict(vetiver_model$model, new_data = prepped_data, ...)$.pred
+        if (isTRUE(vetiver_model$log_transform_enable)) {
+          pred <- exp(pred)
+        }
+        rounded <- ccao::val_round_fmv(
+          pred,
+          breaks = vetiver_model$pv$round_break,
+          round_to = vetiver_model$pv$round_to_nearest,
+          type = vetiver_model$pv$round_type
+        )
+        list(
+          initial_prediction = pred,
+          rounded_prediction = rounded
+        )
+      },
+      error = function(err) {
+        err$trace <- NULL
+        err <- rlang::cnd_entrace(err, top = handler_frame)
+        rlang::cnd_signal(err)
+      }
     )
   }
 }
