@@ -1,6 +1,5 @@
 # Logging setup and helpers for the API. Every log record is a single line of
 # JSON so that CloudWatch (or any other log consumer) can parse its fields.
-# See https://github.com/ccao-data/api-res-avm/issues/13 for background
 
 # Log records are built from the named arguments passed to the logging call,
 # so every call should pass a `msg` plus any other fields worth recording
@@ -9,7 +8,7 @@ logger::log_layout(logger::layout_json_parser(fields = c("time", "level")))
 
 # Send records at ERROR and above to stderr and everything else to stdout.
 # The layout above always writes `time` and then `level` as the first two
-# fields of the record, so we can route on the level without parsing the JSON
+# fields of the record
 appender_split_by_level <- function(lines) {
   is_error <- grepl('^\\{"time":"[^"]*","level":"(ERROR|FATAL)"', lines)
   writeLines(lines[!is_error], con = stdout())
@@ -26,10 +25,6 @@ log_request <- function(level, msg, req, res, ...) {
     method = req$REQUEST_METHOD,
     path = req$PATH_INFO,
     status = res$status,
-    remote_addr = req$REMOTE_ADDR,
-    # Set by the nginx reverse proxy to the IP of the original client. Absent
-    # when the API is called directly, e.g. during local development
-    forwarded_for = purrr::pluck(req, "HTTP_X_FORWARDED_FOR", .default = NA),
     execution_time_secs = round(
       as.numeric(Sys.time() - req$log_start_time, units = "secs"),
       digits = 4
