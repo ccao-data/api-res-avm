@@ -11,9 +11,7 @@ services:
     secrets:
       - ENV_FILE
     restart: unless-stopped
-    # Ship the app's stdout/stderr to CloudWatch. Note that the Docker daemon,
-    # not the container, needs AWS credentials that can write to the log
-    # group; see the README for details
+    # Ship the app's stdout/stderr to CloudWatch
     logging:
       driver: awslogs
       options:
