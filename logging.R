@@ -40,7 +40,8 @@ log_hooks <- list(
   }
 )
 
-# Format an error's traceback for logging
+# Build a traceback string for the log. Prefer the full rlang backtrace when
+# the error has one, fall back to the call that raised it, otherwise NA
 format_traceback <- function(err) {
   if (inherits(err$trace, "rlang_trace")) {
     paste(format(err$trace), collapse = "\n")
