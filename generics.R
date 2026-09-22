@@ -15,10 +15,7 @@ handler_predict._lgb.Booster <- function(vetiver_model, ...) {
 
   function(req) {
     # Attach a backtrace to any error raised while predicting so that the API
-    # error handler can log it (see error_handler() in logging.R). The
-    # backtrace starts at this function so that it excludes plumber internals.
-    # Errors raised by rlang::abort() (e.g. from recipes) already carry a
-    # backtrace, but it starts at plumber::pr_run(), so we replace it
+    # error handler can log it (see error_handler() in logging.R)
     handler_frame <- environment()
     withCallingHandlers(
       {
