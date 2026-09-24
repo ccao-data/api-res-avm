@@ -5,12 +5,14 @@ library(aws.s3)
 library(ccao)
 library(dplyr)
 library(lightsnip)
+library(logger)
 library(tibble)
 library(plumber)
 library(purrr)
 library(rapidoc)
 library(vetiver)
 source("generics.R")
+source("logging.R")
 
 # Define constants
 dvc_bucket_pre_2024 <- "s3://ccao-data-dvc-us-east-1"
@@ -184,6 +186,7 @@ default_run <- valid_runs %>%
 all_endpoints <- list()
 for (i in seq_len(nrow(valid_runs))) {
   run <- valid_runs[i, ]
+  log_info(msg = glue::glue("Loading model {run$run_id}"))
   model <- get_model_from_run(
     run$run_id, run$year, run$dvc_bucket, run$predictors_only
   )
@@ -205,7 +208,11 @@ for (i in seq_len(nrow(valid_runs))) {
 # currently has bad support for deploying multiple models on the same API
 router <- pr() %>%
   plumber::pr_set_debug(rlang::is_interactive()) %>%
-  plumber::pr_set_serializer(plumber::serializer_unboxed_json(null = "null"))
+  plumber::pr_set_serializer(
+    plumber::serializer_unboxed_json(null = "null")
+  ) %>%
+  plumber::pr_set_error(error_handler) %>%
+  plumber::pr_hooks(log_hooks)
 
 # Add Plumber POST enpdoints for each model
 for (i in seq_along(all_endpoints)) {

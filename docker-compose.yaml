@@ -11,6 +11,13 @@ services:
     secrets:
       - ENV_FILE
     restart: unless-stopped
+    # Ship the app's stdout/stderr to CloudWatch
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: /ccao/services/api-res-avm
+        awslogs-stream: plumber
 
 networks:
   api-res-avm-net:
