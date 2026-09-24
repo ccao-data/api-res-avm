@@ -186,7 +186,7 @@ default_run <- valid_runs %>%
 all_endpoints <- list()
 for (i in seq_len(nrow(valid_runs))) {
   run <- valid_runs[i, ]
-  log_info(msg = "Loading model", run_id = run$run_id)
+  log_info(msg = glue::glue("Loading model {run$run_id}"))
   model <- get_model_from_run(
     run$run_id, run$year, run$dvc_bucket, run$predictors_only
   )
