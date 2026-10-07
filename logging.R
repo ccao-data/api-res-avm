@@ -3,7 +3,7 @@
 
 # Define formatter and layout, local only
 logger::log_formatter(logger::formatter_json)
-logger::log_layout(logger::layout_json_parser(fields = c("time", "level")))
+logger::log_layout(logger::layout_json_parser(fields = "level"))
 
 # Send all records to stdout. logger's default appender writes to stderr
 logger::log_appender(logger::appender_stdout)
