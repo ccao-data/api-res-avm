@@ -5,13 +5,8 @@
 logger::log_formatter(logger::formatter_json)
 logger::log_layout(logger::layout_json_parser(fields = c("time", "level")))
 
-# Send records at ERROR and above to stderr and everything else to stdout.
-appender_split_by_level <- function(lines) {
-  is_error <- grepl('^\\{"time":"[^"]*","level":"(ERROR|FATAL)"', lines)
-  writeLines(lines[!is_error], con = stdout())
-  writeLines(lines[is_error], con = stderr())
-}
-logger::log_appender(appender_split_by_level)
+# Send all records to stdout. logger's default appender writes to stderr
+logger::log_appender(logger::appender_stdout)
 
 # Log a record describing a request and its response. Any extra named
 # arguments are added to the record as additional fields
