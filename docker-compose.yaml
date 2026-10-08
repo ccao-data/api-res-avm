@@ -1,16 +1,36 @@
 version: '3.6'
+
+x-default: &plumber
+  build: .
+  image: ${CCAO_REGISTRY_URL}/api-res-avm:latest
+  ports:
+    - "${API_PORT}:${API_PORT}"
+  networks:
+    - api-res-avm-net
+  env_file: .env
+  secrets:
+    - ENV_FILE
+
 services:
-  plumber:
-    build: .
-    image: ${CCAO_REGISTRY_URL}/api-res-avm:latest
-    ports:
-      - "${API_PORT}:${API_PORT}"
-    networks:
-      - api-res-avm-net
-    env_file: .env
-    secrets:
-      - ENV_FILE
+  # Uses Docker's default logging driver, so logs print to the console
+  plumber-dev:
+    <<: *plumber
+    profiles: ["", "dev"]
+    container_name: plumber-dev
+    restart: no
+
+  plumber-prod:
+    <<: *plumber
+    profiles: [prod]
+    container_name: plumber-prod
     restart: unless-stopped
+    # Ship the app's stdout/stderr to CloudWatch
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: /ccao/services/api-res-avm
+        awslogs-stream: plumber
 
 networks:
   api-res-avm-net:
