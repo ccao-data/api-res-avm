@@ -22,6 +22,10 @@ We deploy the API using a Docker Compose service exposed to a port on our server
 that we reverse proxy via [our Nginx
 service](https://github.com/ccao-data/service-nginx).
 
+The Compose file defines two profiles: `prod`, which ships logs to CloudWatch,
+and `dev` (the default), which prints logs to the console. Run
+`docker compose up` for local development.
+
 ### Adding a new model
 
 To add a new model, add it to [the `valid_runs` config object in

@@ -12,8 +12,7 @@ x-default: &plumber
     - ENV_FILE
 
 services:
-  # Uses Docker's default logging driver, so logs print to the console and
-  # the container can start without AWS credentials
+  # Uses Docker's default logging driver, so logs print to the console
   plumber-dev:
     <<: *plumber
     profiles: ["", "dev"]
