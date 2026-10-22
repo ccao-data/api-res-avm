@@ -22,9 +22,12 @@ We deploy the API using a Docker Compose service exposed to a port on our server
 that we reverse proxy via [our Nginx
 service](https://github.com/ccao-data/service-nginx).
 
-The Compose file defines two profiles: `prod`, which ships logs to CloudWatch,
-and `dev` (the default), which prints logs to the console. Run
-`docker compose up` for local development.
+The Compose file defines two profiles: `prod` and `dev` (the default). Both
+print logs to the console as JSON. In `prod`, the API also uploads its logs to
+the CloudWatch log group named by the `CLOUDWATCH_LOG_GROUP_NAME` env var, in a
+new log stream each time the container starts. The AWS creds in
+`secrets/ENV_FILE` must allow `logs:CreateLogStream` and `logs:PutLogEvents`
+on that group. Run `docker compose up` for local development.
 
 ### Adding a new model
 

@@ -1029,6 +1029,36 @@
       ],
       "Hash": "ace928adf616e06ece817d970faa2d03"
     },
+    "paws.common": {
+      "Package": "paws.common",
+      "Version": "0.7.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "base64enc",
+        "curl",
+        "digest",
+        "httr",
+        "jsonlite",
+        "methods",
+        "stats",
+        "utils",
+        "xml2"
+      ],
+      "Hash": "d184fea5f7f48426720b84f5b488380d"
+    },
+    "paws.management": {
+      "Package": "paws.management",
+      "Version": "0.7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "paws.common"
+      ],
+      "Hash": "825160604065040b1927448b4ff74ee5"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.9.0",

@@ -12,7 +12,7 @@ x-default: &plumber
     - ENV_FILE
 
 services:
-  # Uses Docker's default logging driver, so logs print to the console
+  # Logs only print to the console
   plumber-dev:
     <<: *plumber
     profiles: ["", "dev"]
@@ -24,13 +24,9 @@ services:
     profiles: [prod]
     container_name: plumber-prod
     restart: unless-stopped
-    # Ship the app's stdout/stderr to CloudWatch
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-1
-        awslogs-group: /ccao/services/api-res-avm
-        awslogs-stream: plumber
+    # Logs print to the console and the app also uploads them to CloudWatch
+    environment:
+      CLOUDWATCH_LOG_GROUP_NAME: /ccao/services/api-res-avm
 
 networks:
   api-res-avm-net:
