@@ -1,7 +1,5 @@
 # Logging setup and helpers for the API. Every log record is a single line of
-# JSON so that CloudWatch (or any other log consumer) can parse its fields.
-# The app uploads records to CloudWatch itself instead of using Docker's
-# awslogs driver, since that driver needs AWS creds on the Docker daemon
+# JSON so that CloudWatch (or any other log consumer) can parse its fields
 
 # CloudWatch log group to upload logs to, set per environment in
 # docker-compose.yaml. Logs are only uploaded if this is set
@@ -18,9 +16,7 @@ cloudwatch$stream <- paste0(
   "plumber-", format(Sys.time(), "%Y-%m-%d_%H-%M-%S", tz = "UTC")
 )
 
-# Upload log records to CloudWatch as they're written. Uploads block the API
-# from serving requests while they run, so a failed upload is logged and
-# dropped instead of retried
+# Upload log records to CloudWatch as they're written
 cloudwatch_upload <- function(lines) {
   # Skip records logged during an upload, i.e. the warning about a failed
   # upload, which would otherwise try to upload itself in an endless loop
@@ -31,8 +27,10 @@ cloudwatch_upload <- function(lines) {
   on.exit(cloudwatch$uploading <- FALSE)
   timestamp <- round(as.numeric(Sys.time()) * 1000)
   tryCatch(
-    # Don't retry or wait long on a request. paws only limits the time to
-    # connect, so also limit the total time with httr
+    # If a CloudWatch call fails, paws retries it with waits of up to about 20
+    # seconds, and if CloudWatch connects but never answers, paws waits
+    # forever. Turning off retries and capping each call at 3 seconds keeps
+    # either case from freezing the API
     httr::with_config(httr::timeout(3), {
       if (is.null(cloudwatch$client)) {
         cloudwatch$client <- paws.management::cloudwatchlogs(
