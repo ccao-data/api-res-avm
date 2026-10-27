@@ -14,5 +14,3 @@ jobs:
 
       - name: Run pre-commit checks
         uses: ccao-data/actions/pre-commit@main
-        env:
-          DOWNLOAD_STATIC_LIBV8: 1
