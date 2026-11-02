@@ -184,6 +184,7 @@ default_run <- valid_runs %>%
 all_endpoints <- list()
 for (i in seq_len(nrow(valid_runs))) {
   run <- valid_runs[i, ]
+  cat(sprintf("Loading model %s\n", run$run_id))
   model <- get_model_from_run(
     run$run_id, run$year, run$dvc_bucket, run$predictors_only
   )
@@ -206,6 +207,22 @@ for (i in seq_len(nrow(valid_runs))) {
 router <- pr() %>%
   plumber::pr_set_debug(rlang::is_interactive()) %>%
   plumber::pr_set_serializer(plumber::serializer_unboxed_json(null = "null"))
+
+# Log the status code and execution time of each request
+router <- plumber::pr_hooks(router, list(
+  preroute = function(req) {
+    req$start_time <- Sys.time()
+  },
+  postroute = function(req, res) {
+    cat(sprintf(
+      "method=%s path=%s status=%d execution_time_secs=%.4f\n",
+      req$REQUEST_METHOD,
+      req$PATH_INFO,
+      res$status,
+      as.numeric(Sys.time() - req$start_time, units = "secs")
+    ))
+  }
+))
 
 # Add Plumber POST enpdoints for each model
 for (i in seq_along(all_endpoints)) {
