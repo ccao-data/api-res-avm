@@ -30,7 +30,7 @@ services:
       options:
         awslogs-region: us-east-1
         awslogs-group: /ccao/services/api-res-avm
-        awslogs-stream: plumber-local-test
+        awslogs-stream: plumber-prod
 
 networks:
   api-res-avm-net:
