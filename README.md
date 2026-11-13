@@ -60,6 +60,17 @@ Follow these steps to deploy new code changes to the production environment:
   workflow](https://github.com/ccao-data/api-res-avm/actions/workflows/docker-build.yaml)
   to complete execution on the main branch, so that it pushes the most recent
   Docker image to the GitHub Docker registry
+* Make sure you have [SSH agent
+  forwarding](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/using-ssh-agent-forwarding)
+  configured on WSL with the server set as the host, then run the following
+  commands to start the agent and add your key (replace
+  `<your_private_key_file>` with the filename for your SSH private key):
+
+```bash
+eval $(ssh-agent)
+ssh-add ~/.ssh/<your_private_key_file>
+```
+
 * SSH into the server as the Shiny user and navigate to the prod directory
 * Confirm that the prod directory is on the main branch by running `git status`
 * Pull the latest code changes from the main branch by running `git pull origin master`
@@ -71,6 +82,7 @@ Follow these steps to deploy new code changes to the production environment:
   `docker compose --profile prod up -d`
 * Watch the API logs with `docker compose --profile prod logs -f` and wait
   until the service prints a log line confirming that the API is running
+  (press `ctrl+c` to stop tailing the logs when you're done)
 * Attempt to load [the API docs
   page](https://datascience.cookcountyassessor.com/api/res_avm/__docs__/) to
   confirm that the API service is running properly
