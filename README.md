@@ -65,7 +65,7 @@ Follow these steps to deploy new code changes to the production environment:
   configured on WSL with the server set as the host, then run the following
   commands to start the agent and add your key (replace
   `<your_private_key_file>` with the filename for your SSH private key):
-    * `eval \`ssh-agent\``
+    * `eval $(ssh-agent)`
     * `ssh-add ~/.ssh/<your_private_key_file>`
 * SSH into the server as the Shiny user and navigate to the prod directory
 * Confirm that the prod directory is on the main branch by running `git status`
